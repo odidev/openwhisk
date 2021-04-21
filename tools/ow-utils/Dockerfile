@@ -47,18 +47,21 @@ RUN pip install cryptography==2.5 && \
     pip install docker
 
 # Install docker client
-RUN wget --no-verbose https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}.tgz && \
+RUN if [ `uname -m` == "aarch64" ] ; then DOCKER_ARCH="aarch64"; else DOCKER_ARCH="x86_64"; fi
+RUN wget --no-verbose https://get.docker.com/builds/Linux/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz && \
   tar --strip-components 1 -xvzf docker-${DOCKER_VERSION}.tgz -C /usr/bin docker/docker && \
   rm -f docker-${DOCKER_VERSION}.tgz && \
   chmod +x /usr/bin/docker
 
 # Install kubectl in /usr/local/bin
-RUN curl -Lo ./kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
+RUN if [ `uname -m` == "aarch64" ] ; then KUBECTL_ARCH="arm64"; else KUBECTL_ARCH="amd64"; fi
+RUN curl -Lo ./kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/${KUBECTL_ARCH}/kubectl && chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
 
 # Install `wsk` cli in /usr/local/bin
-RUN wget -q https://github.com/apache/openwhisk-cli/releases/download/$WHISK_CLI_VERSION/OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-amd64.tgz && \
-  tar xzf OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-amd64.tgz -C /usr/local/bin wsk && \
-  rm OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-amd64.tgz
+RUN if [ `uname -m` == "aarch64" ] ; then OPENWHISK_ARCH="arm64"; else OPENWHISK_ARCH="amd64"; fi
+RUN wget -q https://github.com/apache/openwhisk-cli/releases/download/$WHISK_CLI_VERSION/OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-${OPENWHISK_ARCH}.tgz && \
+  tar xzf OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-${OPENWHISK_ARCH}.tgz -C /usr/local/bin wsk && \
+  rm OpenWhisk_CLI-$WHISK_CLI_VERSION-linux-${OPENWHISK_ARCH}.tgz
 
 # Install wskadmin in /bin
 COPY wskutil.py /bin
