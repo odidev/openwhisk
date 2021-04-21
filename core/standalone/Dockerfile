@@ -20,12 +20,14 @@ ENV DOCKER_VERSION=18.06.3-ce
 ENV WSK_VERSION=1.0.0
 ADD bin/init /
 ADD bin/stop bin/waitready /bin/
+RUN if [ `uname -m` == "aarch64" ] ; then DOCKER_ARCH="aarch64"; else DOCKER_ARCH="x86_64"; fi
+RUN if [ `uname -m` == "aarch64" ] ; then OPENWHISK_ARCH="arm64"; else OPENWHISK_ARCH="amd64"; fi
 RUN chmod +x /bin/stop /bin/waitready ;\
   curl -sL \
-  https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
+  https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz \
   | tar xzvf -  -C /usr/bin --strip 1 docker/docker ;\
   curl -sL \
-  https://github.com/apache/openwhisk-cli/releases/download/${WSK_VERSION}/OpenWhisk_CLI-${WSK_VERSION}-linux-amd64.tgz \
+  https://github.com/apache/openwhisk-cli/releases/download/${WSK_VERSION}/OpenWhisk_CLI-${WSK_VERSION}-linux-${OPENWHISK_ARCH}.tgz \
   | tar xzvf - -C /usr/bin wsk
 ADD ${OPENWHISK_JAR} /openwhisk-standalone.jar
 WORKDIR /
